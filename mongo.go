@@ -6,27 +6,29 @@ import (
 	"sync"
 
 	"github.com/segmentio/go-source"
+	"github.com/segmentio/kit/log"
+	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
-func syncMongo(session *mgo.Session, sourceClient source.Client) {
-	names, err := session.DatabaseNames()
+func syncMongo(ctx context.Context, session *mgo.Session, sourceClient source.Client) {
+	databases, err := session.DatabaseNames()
 	check(err)
 
 	var wg sync.WaitGroup
-	for _, name := range names {
+	for _, database := range databases {
 		wg.Add(1)
-		go func(name string) {
+		go func(database string) {
 			defer wg.Done()
-			db := session.DB(name)
-			syncDatabase(db, sourceClient)
-		}(name)
+			db := session.DB(database)
+			syncDatabase(context.WithValue(ctx, "database", database), db, sourceClient)
+		}(database)
 	}
 	wg.Wait()
 }
 
-func syncDatabase(db *mgo.Database, sourceClient source.Client) {
+func syncDatabase(ctx context.Context, db *mgo.Database, sourceClient source.Client) {
 	collections, err := db.CollectionNames()
 	check(err)
 
@@ -36,13 +38,17 @@ func syncDatabase(db *mgo.Database, sourceClient source.Client) {
 		go func(collection string) {
 			defer wg.Done()
 			c := db.C(collection)
-			syncCollection(c, sourceClient)
+			syncCollection(context.WithValue(ctx, "collection", collection), c, sourceClient)
 		}(collection)
 	}
 	wg.Wait()
 }
 
-func syncCollection(collection *mgo.Collection, sourceClient source.Client) {
+func syncCollection(ctx context.Context, collection *mgo.Collection, sourceClient source.Client) {
+	log.With(map[string]interface{}{
+		"database":   ctx.Value("database"),
+		"collection": ctx.Value("collection"),
+	}).Infof("syncing collection")
 	iter := collection.Find(nil).Snapshot().Iter()
 	var elem bson.M
 	for iter.Next(&elem) {

@@ -3,12 +3,12 @@ package main
 import (
 	"os"
 
-	"gopkg.in/mgo.v2"
-
 	"github.com/segmentio/go-source"
 	"github.com/segmentio/kit"
 	"github.com/segmentio/kit/config"
 	"github.com/segmentio/kit/schema"
+	"golang.org/x/net/context"
+	"gopkg.in/mgo.v2"
 )
 
 var Version = "0.1.0"
@@ -37,7 +37,7 @@ func run() {
 	})
 	check(err)
 
-	syncMongo(session, sourceClient)
+	syncMongo(context.Background(), session, sourceClient)
 
 	os.Exit(0)
 }

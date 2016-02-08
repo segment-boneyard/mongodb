@@ -4,11 +4,13 @@ import (
 	"testing"
 
 	"github.com/segmentio/go-source/mock"
-
+	"golang.org/x/net/context"
 	"gopkg.in/mgo.v2"
 )
 
 func TestReal(t *testing.T) {
+	t.Skip()
+
 	session, err := mgo.Dial("localhost")
 	check(err)
 
@@ -19,5 +21,5 @@ func TestReal(t *testing.T) {
 		}
 	}()
 
-	syncMongo(session, source)
+	syncMongo(context.Background(), session, source)
 }

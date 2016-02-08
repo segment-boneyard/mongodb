@@ -1,3 +1,3 @@
 # mongodb
 
-MongoDB database source -> Segment
+MongoDB *pull* component -> Segment

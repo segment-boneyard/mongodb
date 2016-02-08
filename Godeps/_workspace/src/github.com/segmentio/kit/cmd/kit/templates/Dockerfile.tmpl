@@ -1,0 +1,4 @@
+FROM segment/base:v2
+COPY service bin/{{.ServiceName}}
+EXPOSE 3000
+ENTRYPOINT ["/{{.ServiceName}}"]

@@ -1,0 +1,64 @@
+{
+	"ImportPath": "github.com/segment-sources/mongodb",
+	"GoVersion": "go1.5.3",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-53-g446d1c1",
+			"Rev": "446d1c146faa8ed3f4218f056fcd165f6bcfda81"
+		},
+		{
+			"ImportPath": "github.com/abursavich/nett",
+			"Rev": "f31118c7aeb99f781b38483679bef7bece9f78db"
+		},
+		{
+			"ImportPath": "github.com/davecgh/go-spew/spew",
+			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/gohttp/jsonrpc-client",
+			"Rev": "fe651ab3d91b488b4f70763b083fc12a883bd27a"
+		},
+		{
+			"ImportPath": "github.com/gohttp/rpc/json",
+			"Rev": "f58084197079eedd5536b7fe5f6e4b95ce251a60"
+		},
+		{
+			"ImportPath": "github.com/gorilla/rpc",
+			"Rev": "64e20900b8aa38bb0771dec71ba3bcc2b07fc8ec"
+		},
+		{
+			"ImportPath": "github.com/ooyala/go-dogstatsd",
+			"Rev": "23f2a1659b0203cd76910e56cd4e6394f14a5cbb"
+		},
+		{
+			"ImportPath": "github.com/segmentio/go-source",
+			"Rev": "ad43bb82e68a2d360189d611551fd4ddf0e1e3d7"
+		},
+		{
+			"ImportPath": "github.com/segmentio/kit",
+			"Rev": "848a32f15e4f53857c74b17bf9582e37e180827c"
+		},
+		{
+			"ImportPath": "github.com/tj/docopt",
+			"Comment": "v1.0.0",
+			"Rev": "c8470e45692f168e8b380c5d625327e756d7d0a9"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "ff8eb9a34a5cbb9941ffc6f84a19a8014c2646ad"
+		},
+		{
+			"ImportPath": "gopkg.in/mgo.v2",
+			"Comment": "r2015.12.06",
+			"Rev": "e30de8ac9ae3b30df7065f766c71f88bba7d4e49"
+		},
+		{
+			"ImportPath": "gopkg.in/validator.v2",
+			"Rev": "8e445b9dc14ab1a1a78cc1f712df991307173ee6"
+		}
+	]
+}

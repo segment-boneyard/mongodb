@@ -49,9 +49,11 @@ func syncCollection(ctx context.Context, collection *mgo.Collection, sourceClien
 		"database":   ctx.Value("database"),
 		"collection": ctx.Value("collection"),
 	}).Infof("syncing collection")
+
+	n := 0
 	iter := collection.Find(nil).Snapshot().Iter()
 	var elem bson.M
-	for iter.Next(&elem) {
+	for ; iter.Next(&elem); n++ {
 		var id string
 		switch _id := elem["_id"].(type) {
 		case string:
@@ -65,5 +67,12 @@ func syncCollection(ctx context.Context, collection *mgo.Collection, sourceClien
 		err := sourceClient.Set(collection.Name, id, elem)
 		check(err)
 	}
+
 	check(iter.Close())
+
+	log.With(map[string]interface{}{
+		"database":   ctx.Value("database"),
+		"collection": ctx.Value("collection"),
+		"count":      n,
+	}).Infof("synced collection")
 }

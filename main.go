@@ -22,6 +22,10 @@ func main() {
 				Key:      "url",
 				Required: true,
 			},
+			{
+				Key:      "database",
+				Required: true,
+			},
 		},
 		Handler: run,
 	})
@@ -29,6 +33,8 @@ func main() {
 
 func run() {
 	url := config.Get("url").(string)
+	database := config.Get("database").(string)
+
 	session, err := mgo.Dial(url)
 	check(err)
 
@@ -37,7 +43,7 @@ func run() {
 	})
 	check(err)
 
-	syncMongo(context.Background(), session, sourceClient)
+	syncMongo(context.Background(), database, session, sourceClient)
 
 	os.Exit(0)
 }

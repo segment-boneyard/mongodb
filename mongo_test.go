@@ -21,5 +21,5 @@ func TestReal(t *testing.T) {
 		}
 	}()
 
-	syncMongo(context.Background(), session, source)
+	syncMongo(context.Background(), "test", session, source)
 }

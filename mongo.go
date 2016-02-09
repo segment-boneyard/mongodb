@@ -12,20 +12,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func syncMongo(ctx context.Context, session *mgo.Session, sourceClient source.Client) {
-	databases, err := session.DatabaseNames()
-	check(err)
-
-	var wg sync.WaitGroup
-	for _, database := range databases {
-		wg.Add(1)
-		go func(database string) {
-			defer wg.Done()
-			db := session.DB(database)
-			syncDatabase(context.WithValue(ctx, "database", database), db, sourceClient)
-		}(database)
-	}
-	wg.Wait()
+func syncMongo(ctx context.Context, database string, session *mgo.Session, sourceClient source.Client) {
+	db := session.DB(database)
+	syncDatabase(context.WithValue(ctx, "database", database), db, sourceClient)
 }
 
 func syncDatabase(ctx context.Context, db *mgo.Database, sourceClient source.Client) {

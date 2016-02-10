@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/segmentio/go-source"
@@ -23,6 +24,13 @@ func syncDatabase(ctx context.Context, db *mgo.Database, sourceClient source.Cli
 
 	var wg sync.WaitGroup
 	for _, collection := range collections {
+		if strings.HasPrefix(collection, "system.") {
+			log.With(map[string]interface{}{
+				"database":   ctx.Value("database"),
+				"collection": collection,
+			}).Infof("skipping system collection")
+			continue
+		}
 		wg.Add(1)
 		go func(collection string) {
 			defer wg.Done()
@@ -48,9 +56,9 @@ func syncCollection(ctx context.Context, collection *mgo.Collection, sourceClien
 		case string:
 			id = _id
 		case bson.ObjectId:
-			id = _id.String()
+			id = _id.Hex()
 		default:
-			panic(errors.New(fmt.Sprintf("unknown type for _id: %T", elem["_id"])))
+			panic(errors.New(fmt.Sprintf("unknown type for _id: %T:%v in %v", elem["_id"], elem["_id"], elem)))
 		}
 		delete(elem, "_id")
 		err := sourceClient.Set(collection.Name, id, elem)

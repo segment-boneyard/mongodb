@@ -51,14 +51,14 @@ func (m *MongoDB) GetDescription() (*Description, error) {
 }
 
 func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object)) error {
-	colsToInclude := make(map[string]interface{})
-	for _, column := range c.Columns {
-		colsToInclude[column.Source] = 1
+	fieldsToInclude := make(map[string]interface{})
+	for _, field := range c.Fields {
+		fieldsToInclude[field.Source] = 1
 	}
-	logrus.WithFields(logrus.Fields{"colsToInclude": colsToInclude}).Debug("Calculating columns to include / exclude.")
+	logrus.WithFields(logrus.Fields{"fieldsToInclude": fieldsToInclude}).Debug("Calculating which fields to include or exclude.")
 
 	// Iterate through collection, grabbing only user specified fields.
-	iter := m.db.C(c.CollectionName).Find(nil).Select(colsToInclude).Iter()
+	iter := m.db.C(c.CollectionName).Find(nil).Select(fieldsToInclude).Iter()
 	var result map[string]interface{}
 	for iter.Next(&result) {
 		logrus.WithFields(logrus.Fields{"result": result}).Debug("Processing row from DB")
@@ -106,10 +106,10 @@ func getIdFromResult(result map[string]interface{}) (string, error) {
 
 func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) map[string]interface{} {
 	properties := make(map[string]interface{})
-	for columnName, column := range c.Columns {
-		value := getForNestedKey(result, column.Source)
+	for fieldName, field := range c.Fields {
+		value := getForNestedKey(result, field.Source)
 		if value != nil {
-			properties[columnName] = getForNestedKey(result, column.Source)
+			properties[fieldName] = getForNestedKey(result, field.Source)
 		}
 	}
 	return properties

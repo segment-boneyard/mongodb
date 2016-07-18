@@ -13,8 +13,7 @@ A `products` collection in the `test` database that looks like this in your prod
         "spanish": "manzana",
         "french" : "pomme"
     }
-}
-
+},
 {
     "name": "Pear",
     "cost": 2.01,
@@ -58,14 +57,24 @@ The first step is to initialize your schema. You can do so by running `mongodb` 
 ```bash
 mongodb --init --write-key=ab-200-1alx91kx --hostname=postgres-test.ksdg31bcms.us-west-2.rds.amazonaws.com --port=5432 --username=segment --password=cndgks8102baajls --database=segment -- sslmode=prefer
 ```
-The init step will store the schema of possible tables that the source can sync in `schema.json`. The query will look for tables across all schemas excluding the ones without a `PRIMARY KEY`.
+The init step will store the schema of possible collections that the source can sync in `schema.json`. The user should then fill in which fields for each collection should be exported. If no fields for a collection are desired, feel free to remove that particular collection from the JSON entry altogether.
 
-In the `schema.json` example below, our parser found the collection `films` in the database `public`. The `column` list is used to generate `SELECT` statements, you can filter out some fields that you don't want to sync with Segment by removing them from the list.
+In the `schema.json` example below, our parser found the collection `products` in the database `test`.
 ```json
 {
     "test": {
         "products": {
-            "columns": {
+        }
+    }
+}
+```
+
+Let's say a user wants to export 4 fields: `name`, `cost`, `translations_spanish`, `translations_french` as in the original example of this doc. The JSON should then be:
+```json
+{
+    "test": {
+        "products": {
+            "fields": {
                 "name": {
                     "source": "name"
                 },
@@ -83,9 +92,12 @@ In the `schema.json` example below, our parser found the collection `films` in t
     }
 }
 ```
+`name` and `cost` are first level fields, so their `source` values are simply the field names. The other two fields are nested fields so they need to refer to their nested field names using dot syntax, for example `translations.spanish` and `translations.french`.
 
-
-Segment's Objects API requires a unique identifier in order to properly sync your tables, the `PRIMARY KEY` is used as the identifier. Your tables may also have multiple primary keys, in that case we'll concatenate the values in one string joined with underscores.
+Some notes:
+* :warning: The warehouse type for a particular field is set the first time data for that field is seen. If subsequent data inserted into the warehouse has a different type than the original type seen, the field value may not cast correctly and loaded into the warehouse properly.
+* Currently the only supported MongoDB data types are string, integer, long, double, boolean, date.
+* Segment's Objects API requires a unique identifier in order to properly sync your collection. In the case of the MongoDB source, each object's native `_id_` field is used as the identifier.
 
 
 ### Scan
@@ -114,7 +126,7 @@ Options:
   -h --help                   Show this screen
   --version                   Show version
   --write-key=<key>           Segment source write key
-  --concurrency=<c>           Number of concurrent table scans [default: 1]
+  --concurrency=<c>           Number of concurrent collection scans [default: 1]
   --hostname=<hostname>       Database instance hostname
   --port=<port>               Database instance port number
   --password=<password>       Database instance password

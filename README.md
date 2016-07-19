@@ -55,7 +55,7 @@ go get github.com/segment-sources/mongodb
 
 The first step is to initialize your schema. You can do so by running `mongodb` with `--init` flag.
 ```bash
-mongodb --init --write-key=ab-200-1alx91kx --hostname=postgres-test.ksdg31bcms.us-west-2.rds.amazonaws.com --port=5432 --username=segment --password=cndgks8102baajls --database=segment -- sslmode=prefer
+mongodb --hostname=mongo-test.ksd31bacms.us-west-2.rds.amazonaws.com --port=27017 --username=segment --password=cndgks9102baajls --database=segment --sslmode=prefer --init
 ```
 The init step will store the schema of possible collections that the source can sync in `schema.json`. The user should then fill in which fields for each collection should be exported. If no fields for a collection are desired, feel free to remove that particular collection from the JSON entry altogether.
 
@@ -101,8 +101,9 @@ Some notes:
 
 
 ### Scan
+To begin exporting fields out of the DB, remove the `--init` flag and add a `--write-key` value:
 ```bash
-mongodb --write-key=ab-200-1alx91kx --hostname=postgres-test.ksdg31bcms.us-west-2.rds.amazonaws.com --port=5432 --username=segment --password=cndgks8102baajls --database=segment --sslmode=prefer
+mongodb --hostname=mongo-test.ksd31bacms.us-west-2.rds.amazonaws.com --port=27017 --username=segment --password=cndgks9102baajls --database=segment --sslmode=prefer --write-key=ab-200-1alx91kx
 ```
 
 ### Usage
@@ -112,7 +113,7 @@ Usage:
     [--debug]
     [--init]
     [--concurrency=<c>]
-    --write-key=<segment-write-key>
+    [--write-key=<segment-write-key>]
     --hostname=<hostname>
     --port=<port>
     --username=<username>

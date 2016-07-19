@@ -23,7 +23,7 @@ Usage:
     [--init]
     [--concurrency=<c>]
     [--schema=<schema-path>]
-    --write-key=<segment-write-key>
+    [--write-key=<segment-write-key>]
     --hostname=<hostname>
     --port=<port>
     --username=<username>
@@ -57,25 +57,6 @@ func main() {
 		return
 	}
 
-	segmentClient := objects.New(m["--write-key"].(string))
-	defer segmentClient.Close()
-
-	setWrapperFunc := func(o *objects.Object) {
-		err := segmentClient.Set(o)
-		if err != nil {
-			logrus.WithFields(logrus.Fields{"id": o.ID, "collection": o.Collection, "properties": o.Properties}).Warn(err)
-		}
-	}
-
-	config := &Config{
-		Init:         m["--init"].(bool),
-		Hostname:     m["--hostname"].(string),
-		Port:         m["--port"].(string),
-		Username:     m["--username"].(string),
-		Password:     m["--password"].(string),
-		Database:     m["--database"].(string),
-	}
-
 	if m["--debug"].(bool) {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
@@ -86,14 +67,19 @@ func main() {
 		return
 	}
 
-	// Validate the configuration
+	// Load and validate DB configuration.
+	config := &Config{
+		Init:         m["--init"].(bool),
+		Hostname:     m["--hostname"].(string),
+		Port:         m["--port"].(string),
+		Username:     m["--username"].(string),
+		Password:     m["--password"].(string),
+		Database:     m["--database"].(string),
+	}
 	if _, err := govalidator.ValidateStruct(config); err != nil {
 		logrus.Error(err)
 		return
 	}
-
-	// Open the schema
-	fileName := m["--schema"].(string)
 
 	// Initialize DB connection.
 	if err := app.Init(config); err != nil {
@@ -103,6 +89,7 @@ func main() {
 
 	// If in init mode, save list of collections to schema file. Users will then have to modify the
 	// file and fill in fields they want to export to their Segment warehouse.
+	fileName := m["--schema"].(string)
 	if config.Init {
 		schemaFile, err := os.OpenFile(fileName, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0644)
 		if err != nil {
@@ -127,7 +114,7 @@ func main() {
 		return
 	}
 
-	// We must *not* be in init mode.
+	// We must not be in init mode at this point, begin uploading source data.
 	schemaFile, err := os.OpenFile(fileName, os.O_RDONLY, 0644)
 	if err != nil {
 		logrus.Error(err)
@@ -144,11 +131,27 @@ func main() {
 		return
 	}
 
+	// Build Segment client and define publish function for when we scan over the collections.
+	writeKey := m["--write-key"]
+	if writeKey == nil {
+		logrus.Error("Write key is required when not in init mode.")
+		return
+	}
+	segmentClient := objects.New(writeKey.(string))
+	defer segmentClient.Close()
+
+	setWrapperFunc := func(o *objects.Object) {
+		err := segmentClient.Set(o)
+		if err != nil {
+			logrus.WithFields(logrus.Fields{"id": o.ID, "collection": o.Collection, "properties": o.Properties}).Warn(err)
+		}
+	}
+
 	// Launch goroutines to scan the documents in each collection.
 	sem := make(semaphore.Semaphore, concurrency)
 
 	for collection := range description.Iter() {
-		// Skip collection if no fields specified.
+		// Skip collection if no fields specified in schema JSON.
 		if len(collection.Fields) == 0 {
 			continue
 		}

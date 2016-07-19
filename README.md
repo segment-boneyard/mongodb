@@ -50,7 +50,7 @@ $ docker run segment/mongodb-source <your-options>
 Prerequisites: [Go](https://golang.org/doc/install)
 
 ```bash
-go get -u github.com/segment-sources/mongodb
+go get github.com/segment-sources/mongodb
 ```
 
 The first step is to initialize your schema. You can do so by running `mongodb` with `--init` flag.

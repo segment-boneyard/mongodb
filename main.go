@@ -43,7 +43,7 @@ Options:
   --username=<username>       Database instance username
   --password=<password>       Database instance password
   --database=<database>       Database instance name
-  --schema=<schema-path>	  The path to the schema json file [default: schema.json]
+  --schema=<schema-path>	    The path to the schema json file [default: schema.json]
 
 `
 
@@ -102,7 +102,7 @@ func main() {
 	}
 
 	// If in init mode, save list of collections to schema file. Users will then have to modify the
-	// file and fill in fields they want to export to Segment.
+	// file and fill in fields they want to export to their Segment warehouse.
 	if config.Init {
 		schemaFile, err := os.OpenFile(fileName, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0644)
 		if err != nil {
@@ -148,6 +148,11 @@ func main() {
 	sem := make(semaphore.Semaphore, concurrency)
 
 	for collection := range description.Iter() {
+		// Skip collection if no fields specified.
+		if len(collection.Fields) == 0 {
+			continue
+		}
+
 		sem.Acquire()
 		go func(collection *Collection, dbName string) {
 			defer sem.Release()

@@ -97,7 +97,7 @@ Let's say a user wants to export 4 fields: `name`, `cost`, `translations_spanish
 Some notes:
 * :warning: The warehouse type for a particular field is set the first time data for that field is seen. If subsequent data inserted into the warehouse has a different type than the original type seen, the field value may not cast correctly and loaded into the warehouse properly.
 * Currently the only supported MongoDB data types are string, integer, long, double, boolean, date.
-* Segment's Objects API requires a unique identifier in order to properly sync your collection. In the case of the MongoDB source, each object's native `_id_` field is used as the identifier.
+* Each object's native `_id_` field is already uploaded by default to Segment and is used as a unique identifier for that object. There is no need to put this field in `schema.json`.
 
 
 ### Scan

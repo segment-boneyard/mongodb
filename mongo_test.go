@@ -13,13 +13,13 @@ import (
 // Credentials to local MongoDB instance that will be used by the tests. Make sure your local
 // MongoDB has the appropriate user permissions set for this user for the test DB.
 const hostname string = "localhost"
-const port string =     "27017"
-const username string = "klo"
-const password string = "password"
+const port string = "27017"
+const username string = ""
+const password string = ""
 const database string = "test"
 const collection string = "products"
 
-var testMongoConfig *Config = &Config{
+var testMongoConfig = &Config{
 	Hostname: hostname,
 	Port:     port,
 	Username: username,
@@ -49,7 +49,7 @@ func (s *MongoTestSuite) SetupTest() {
 		"tags": []string{"fruit", "red"},
 		"translations": map[string]interface{}{
 			"spanish": "manzana",
-			"french": "pomme",
+			"french":  "pomme",
 		},
 	})
 	db.C(collection).Insert(map[string]interface{}{
@@ -108,10 +108,10 @@ func (s *MongoTestSuite) TestGetDescription() {
 	// Check that our set and desc are exactly the same set of strings.
 	collectionsMap := desc.schemas[database]
 	assert.Equal(t, cNamesSet.Cardinality(), len(collectionsMap), "num of collections scanned should be equal")
-	for cName, _ := range collectionsMap {
+	for cName := range collectionsMap {
 		if !cNamesSet.Contains(cName) {
-			t.Fatalf("Expected MongoDB collections list to include: %v " +
-					"but it didn't. Set contents are: %v", cName, cNamesSet)
+			t.Fatalf("Expected MongoDB collections list to include: %v "+
+				"but it didn't. Set contents are: %v", cName, cNamesSet)
 		}
 		cNamesSet.Remove(cName)
 	}
@@ -137,7 +137,7 @@ func (s *MongoTestSuite) TestGetForNestedKeyNested() {
 		"apple": map[string]interface{}{
 			"translations": map[string]interface{}{
 				"spanish": "manzana",
-				"french": "pomme",
+				"french":  "pomme",
 			},
 		},
 	}

@@ -74,9 +74,11 @@ Let's say a user wants to export 4 fields: `name`, `cost`, `translations_spanish
 {
     "test": {
         "products": {
+            "destination_name": "my_products",
             "fields": {
                 "name": {
-                    "source": "name"
+                    "source": "name",
+                    "destination_name": "my_name",
                 },
                 "cost": {
                     "source": "cost"

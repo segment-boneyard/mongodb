@@ -68,17 +68,24 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 			return err
 		}
 
-		collection := snakecase.Snakecase(fmt.Sprintf("%s_%s", m.dbName, c.CollectionName))
+		// The destination name (e.g. name of the collection in the warehouse) can be set by the user,
+		// otherwise it just defaults to the collection name in Mongo.
+		var destinationName string
+		if c.DestinationName == "" {
+			destinationName = snakecase.Snakecase(fmt.Sprintf("%s_%s", m.dbName, c.CollectionName))
+		} else {
+			destinationName = c.DestinationName
+		}
 
 		// Create properties map and fill it in with all the fields were able to find.
 		properties := getPropertiesMapFromResult(result, c)
 
 		publish(&objects.Object{
 			ID:         id,
-			Collection: collection,
+			Collection: destinationName,
 			Properties: properties,
 		})
-		logrus.WithFields(logrus.Fields{"ID": id, "Collection": collection, "Properties": properties}).Debug("Published row")
+		logrus.WithFields(logrus.Fields{"ID": id, "Collection": destinationName, "Properties": properties}).Debug("Published row")
 	}
 
 	return iter.Close()
@@ -108,8 +115,16 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 	properties := make(map[string]interface{})
 	for fieldName, field := range c.Fields {
 		value := getForNestedKey(result, field.Source)
+
+		// The destination name (e.g. name of the collection in the warehouse) can be set by the user,
+		// otherwise it just defaults to the collection name in Mongo.
+		destinationName := fieldName
+		if field.DestinationName != "" {
+			destinationName = field.DestinationName
+		}
+
 		if value != nil {
-			properties[fieldName] = getForNestedKey(result, field.Source)
+			properties[destinationName] = getForNestedKey(result, field.Source)
 		}
 	}
 	return properties

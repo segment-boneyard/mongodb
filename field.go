@@ -1,7 +1,6 @@
 package main
 
 type Field struct {
-	Source   string            `json:"source"`
-	DataType string            `json:"data_type"`
-	Fields   map[string]string `json:"fields"`
+	Source          string `json:"source"`
+	DestinationName string `json:"destination_name"`
 }

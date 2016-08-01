@@ -5,13 +5,13 @@ save-deps:
 	godep save
 
 run:
-	godep go run main.go mongo.go collection.go config.go description.go
+	go run main.go mongo.go collection.go config.go description.go
 
 build:
-	godep go build
+	go build .
 	
 test:
-	godep go test .
+	go test .
 
 build-image:
 	docker build -t $(IMAGE) . 

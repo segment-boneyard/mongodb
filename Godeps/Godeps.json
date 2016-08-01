@@ -45,8 +45,8 @@
 		},
 		{
 			"ImportPath": "github.com/segmentio/go-tableize",
-			"Comment": "v1.0.0-13-gc53ec1a",
-			"Rev": "c53ec1a3d2b938f19384bc15e7052f907cbd5130"
+			"Comment": "v1.0.0-14-gd4de793",
+			"Rev": "d4de793929c6f049076b56e51445188c9b85565f"
 		},
 		{
 			"ImportPath": "github.com/segmentio/objects-go",
@@ -103,6 +103,10 @@
 		{
 			"ImportPath": "gopkg.in/validator.v2",
 			"Rev": "8e445b9dc14ab1a1a78cc1f712df991307173ee6"
+		},
+		{
+			"ImportPath": "github.com/segmentio/go-tableize/vendor/github.com/segmentio/go-snakecase",
+			"Rev": "77da8fb17951bd0a9469fa7efe914fb0812e77ae"
 		}
 	]
 }

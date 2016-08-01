@@ -1,6 +1,10 @@
 package tableize
 
-import . "github.com/segmentio/go-snakecase"
+import (
+	"log"
+	"encoding/json"
+	. "github.com/segmentio/go-snakecase"
+)
 
 // Tableize the given map by flattening and normalizing all
 // of the key/value pairs recursively.
@@ -24,6 +28,13 @@ func visit(ret map[string]interface{}, m map[string]interface{}, prefix string) 
 		key = prefix + Snakecase(key)
 		if _, ok := val.(map[string]interface{}); ok {
 			visit(ret, val.(map[string]interface{}), key+"_")
+		} else if _, ok := val.([]interface{}); ok {
+			arrayJSON, err := json.Marshal(val)
+			if err != nil {
+				log.Printf("[Error] Unable to marshall value `%v` err: %v", val, err)
+			} else {
+				ret[key] = arrayJSON
+			}
 		} else {
 			ret[key] = val
 		}

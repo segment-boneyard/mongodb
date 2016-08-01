@@ -5,7 +5,7 @@ save-deps:
 	godep save
 
 run:
-	go run main.go mongo.go collection.go config.go description.go
+	go run main.go mongo.go collection.go config.go description.go $(ARGS)
 
 build:
 	go build .

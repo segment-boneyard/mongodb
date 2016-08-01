@@ -54,6 +54,8 @@ Options:
 func main() {
 	app := &MongoDB{};
 	defer app.Close()
+	
+	logrus.Info("starting")
 
 	m, err := docopt.Parse(usage, nil, true, Version, false)
 	if err != nil {
@@ -84,41 +86,24 @@ func main() {
 		Password:     m["--password"].(string),
 		Database:     m["--database"].(string),
 	}
-	if _, err := govalidator.ValidateStruct(config); err != nil {
+	_, err = govalidator.ValidateStruct(config)
+	if err != nil {
 		logrus.Error(err)
 		return
 	}
 
+	logrus.Infof("Will connect to database %v@%v:%v/%v",
+		config.Username, config.Hostname, config.Port, config.Database)
 	// Initialize DB connection.
 	if err := app.Init(config); err != nil {
 		logrus.Error(err)
 		return
 	}
-
 	// If in init mode, save list of collections to schema file. Users will then have to modify the
 	// file and fill in fields they want to export to their Segment warehouse.
 	fileName := m["--schema"].(string)
 	if config.Init {
-		schemaFile, err := os.OpenFile(fileName, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0644)
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
-		defer schemaFile.Close()
-
-		description, err := app.GetDescription()
-		if err != nil {
-			logrus.Error(err)
-			return
-		}
-
-		if err := description.Save(schemaFile); err != nil {
-			logrus.Error(err)
-			return
-		}
-
-		schemaFile.Sync()
-		logrus.Infof("Saved to `%s`", schemaFile.Name())
+		initSchema(fileName, app)
 		return
 	}
 
@@ -140,12 +125,41 @@ func main() {
 	}
 
 	// Build Segment client and define publish function for when we scan over the collections.
-	writeKey := m["--write-key"]
-	if writeKey == nil {
+	writeKey := m["--write-key"].(string)
+	if writeKey == "" {
 		logrus.Error("Write key is required when not in init mode.")
 		return
 	}
-	segmentClient := objects.New(writeKey.(string))
+	run(writeKey, app, description, concurrency)
+}
+
+func initSchema(fileName string, app *MongoDB) {
+	logrus.Info("Will output schema to ", fileName)
+	schemaFile, err := os.OpenFile(fileName, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0644)
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+	defer schemaFile.Close()
+
+	description, err := app.GetDescription()
+	if err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	if err := description.Save(schemaFile); err != nil {
+		logrus.Error(err)
+		return
+	}
+
+	schemaFile.Sync()
+	logrus.Infof("Saved to `%s`", schemaFile.Name())
+}
+
+func run(writeKey string, app *MongoDB, description *Description, concurrency int) {
+	logrus.Info("Mongo source started with writeKey ", writeKey)
+	segmentClient := objects.New(writeKey)
 	defer segmentClient.Close()
 
 	setWrapperFunc := func(o *objects.Object) {

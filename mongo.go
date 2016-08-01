@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"time"
 	"strings"
 
 	"github.com/Sirupsen/logrus"
@@ -23,6 +24,7 @@ func (m *MongoDB) Init(c *Config) error {
 		Database: c.Database,
 		Username: c.Username,
 		Password: c.Password,
+		Timeout: time.Duration(5 * time.Second),
 	})
 	if err != nil {
 		return err
@@ -92,7 +94,9 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 }
 
 func (m *MongoDB) Close() {
-	m.db.Session.Close()
+	if m.db != nil {
+		m.db.Session.Close()
+	}
 }
 
 func getIdFromResult(result map[string]interface{}) (string, error) {

@@ -1,6 +1,6 @@
 
 IMAGE=segment/mongodb-source
-VERSION=v0.1.0-beta
+VERSION=v0.1.1-beta
 
 save-deps:
 	godep save

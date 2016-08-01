@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	Version = "v0.1.0-beta"
+	Version = "v0.1.1-beta"
 )
 
 var usage = `

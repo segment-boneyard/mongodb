@@ -1,15 +1,18 @@
-segmentio:
-  workspaces:
+test:
+  users:
+    # If destination_name is not specified, we would use <database>_<collection>
+    # as the destination collection name. (e.g. test_users)
+    destination_name: accounts
     fields:
-      name:
-      cost:
-      translations.spanish: translations_spanish
-      translations.french: translations.french
-  
-  metadata:
-    destination_name: meta_integrations
+      slug:
+      _id: id
+  projects:
+    # `fields` is a map from source field name in mongo to destination field name in .set
     fields:
+      # Leave the destination field name (map value) empty to default to using
+      # the source field name in mongo
       name:
-      cost:
-      translations.spanish: translations_spanish
-      translations.french: translations.french
+      # You can always specify destination name explicitly for clarity
+      type: type
+      # Specify a different destination name from a source name to rename field
+      _id: id

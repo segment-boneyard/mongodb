@@ -1,21 +1,18 @@
 {
-    "segmentio": {
-        "workspaces": {
-            "fields": {
-                "translations.spanish": "translations_spanish", 
-                "cost": null, 
-                "name": null, 
-                "translations.french": "translations.french"
-            }
-        }, 
-        "metadata": {
-            "fields": {
-                "translations.spanish": "translations_spanish", 
-                "cost": null, 
-                "name": null, 
-                "translations.french": "translations.french"
-            }, 
-            "destination_name": "meta_integrations"
-        }
+  "test": {
+    "users": {
+      "destination_name": "accounts",
+      "fields": {
+        "slug": null,
+        "_id": "id"
+      }
+    },
+    "projects": {
+      "fields": {
+        "name": null,
+        "type": "type",
+        "_id": "id"
+      }
     }
+  }
 }

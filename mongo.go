@@ -63,7 +63,10 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 	iter := m.db.C(c.CollectionName).Find(nil).Select(fieldsToInclude).Iter()
 	var result map[string]interface{}
 	for iter.Next(&result) {
-		logrus.WithFields(logrus.Fields{"result": result}).Debug("Processing row from DB")
+		logrus.WithFields(logrus.Fields{
+			"result": result,
+			"Collection": c.CollectionName,
+		}).Debug("Processing row from DB")
 
 		id, err := getIdFromResult(result)
 		if err != nil {

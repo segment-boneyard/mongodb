@@ -54,8 +54,6 @@ Options:
 func main() {
 	app := &MongoDB{};
 	defer app.Close()
-	
-	logrus.Info("starting")
 
 	m, err := docopt.Parse(usage, nil, true, Version, false)
 	if err != nil {

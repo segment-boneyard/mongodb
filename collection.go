@@ -1,9 +1,9 @@
 package main
 
 type Collection struct {
-	Fields          map[string]Field `json:"fields"`
-	CollectionName  string           `json:"-"`
-	DestinationName string           `json:"destination_name,omitempty"`
+	Fields          map[string]string `json:"fields"`
+	CollectionName  string            `json:"-"`
+	DestinationName string            `json:"destination_name,omitempty"`
 }
 
 func (c *Collection) GetFieldNames() []string {

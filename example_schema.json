@@ -1,0 +1,21 @@
+{
+    "segmentio": {
+        "workspaces": {
+            "fields": {
+                "translations.spanish": "translations_spanish", 
+                "cost": null, 
+                "name": null, 
+                "translations.french": "translations.french"
+            }
+        }, 
+        "metadata": {
+            "fields": {
+                "translations.spanish": "translations_spanish", 
+                "cost": null, 
+                "name": null, 
+                "translations.french": "translations.french"
+            }, 
+            "destination_name": "meta_integrations"
+        }
+    }
+}

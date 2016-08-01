@@ -1,0 +1,15 @@
+segmentio:
+  workspaces:
+    fields:
+      name:
+      cost:
+      translations.spanish: translations_spanish
+      translations.french: translations.french
+  
+  metadata:
+    destination_name: meta_integrations
+    fields:
+      name:
+      cost:
+      translations.spanish: translations_spanish
+      translations.french: translations.french

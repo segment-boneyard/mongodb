@@ -52,8 +52,8 @@ func (m *MongoDB) GetDescription() (*Description, error) {
 
 func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object)) error {
 	fieldsToInclude := make(map[string]interface{})
-	for _, field := range c.Fields {
-		fieldsToInclude[field.Source] = 1
+	for source := range c.Fields {
+		fieldsToInclude[source] = 1
 	}
 	logrus.WithFields(logrus.Fields{"fieldsToInclude": fieldsToInclude}).Debug("Calculating which fields to include or exclude.")
 
@@ -113,18 +113,17 @@ func getIdFromResult(result map[string]interface{}) (string, error) {
 
 func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) map[string]interface{} {
 	properties := make(map[string]interface{})
-	for fieldName, field := range c.Fields {
-		value := getForNestedKey(result, field.Source)
+	for source, destination := range c.Fields {
+		value := getForNestedKey(result, source)
 
-		// The destination name (e.g. name of the collection in the warehouse) can be set by the user,
-		// otherwise it just defaults to the collection name in Mongo.
-		destinationName := fieldName
-		if field.DestinationName != "" {
-			destinationName = field.DestinationName
+		// The destination name (e.g. name of the field in the warehouse) can be set by the user,
+		// otherwise it just defaults to the field name in Mongo.
+		if destination == "" {
+			destination = source
 		}
 
 		if value != nil && value != bson.Undefined {
-			properties[destinationName] = value
+			properties[destination] = value
 		}
 	}
 	return properties

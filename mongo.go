@@ -1,10 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/segmentio/go-snakecase"
@@ -24,7 +25,7 @@ func (m *MongoDB) Init(c *Config) error {
 		Database: c.Database,
 		Username: c.Username,
 		Password: c.Password,
-		Timeout: time.Duration(5 * time.Second),
+		Timeout:  time.Duration(5 * time.Second),
 	})
 	if err != nil {
 		return err
@@ -64,7 +65,7 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 	var result map[string]interface{}
 	for iter.Next(&result) {
 		logrus.WithFields(logrus.Fields{
-			"result": result,
+			"result":     result,
 			"Collection": c.CollectionName,
 		}).Debug("Processing row from DB")
 
@@ -129,7 +130,14 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 			destination = source
 		}
 
-		if value != nil && value != bson.Undefined {
+		if _, ok := value.([]interface{}); ok {
+			arrayJSON, err := json.Marshal(value)
+			if err != nil {
+				logrus.Errorf("[Error] Unable to marshall value. Skipping `%v` err: %v", value, err)
+			} else {
+				properties[destination] = arrayJSON
+			}
+		} else if value != nil && value != bson.Undefined {
 			properties[destination] = value
 		}
 	}

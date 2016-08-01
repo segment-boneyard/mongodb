@@ -1,5 +1,6 @@
 
 IMAGE=segment/mongodb-source
+VERSION=v0.1.0-beta
 
 save-deps:
 	godep save
@@ -14,10 +15,10 @@ test:
 	go test .
 
 build-image:
-	docker build -t $(IMAGE) . 
+	docker build $(FLAGS) -t $(IMAGE):$(VERSION) . 
 
 push-image:
-	docker push $(IMAGE)
+	docker push $(IMAGE):$(VERSION)
 
 .PHONY: run build test build-image push-image
 .DEFAULT_GOAL := build

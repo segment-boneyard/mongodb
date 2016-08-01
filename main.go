@@ -10,6 +10,7 @@ import (
 	"github.com/segmentio/objects-go"
 	"github.com/tj/docopt"
 	"github.com/tj/go-sync/semaphore"
+	"github.com/segmentio/ecs-logs-go/logrus"
 )
 
 const (
@@ -21,6 +22,7 @@ Usage:
   mongodb
     [--debug]
     [--init]
+    [--json-log]
     [--concurrency=<c>]
     [--schema=<schema-path>]
     [--write-key=<segment-write-key>]
@@ -36,6 +38,8 @@ Options:
     "github.com/segmentio/source-db-lib/internal/domain"
   -h --help                   Show this screen
   --version                   Show version
+	[--debug]										Set logrus level to .DebugLevel
+	[--json-log]								Format log as JSON. Useful for ecs-logs for example
   --write-key=<key>           Segment source write key
   --concurrency=<c>           Number of concurrent table scans [default: 1]
   --hostname=<hostname>       Database instance hostname
@@ -59,6 +63,10 @@ func main() {
 
 	if m["--debug"].(bool) {
 		logrus.SetLevel(logrus.DebugLevel)
+	}
+	
+	if m["--json-log"].(bool) {
+		logrus.SetFormatter(logrus_ecslogs.NewFormatter())
 	}
 
 	concurrency, err := strconv.Atoi(m["--concurrency"].(string))

@@ -135,7 +135,7 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 			if err != nil {
 				logrus.Errorf("[Error] Unable to marshall value. Skipping `%v` err: %v", value, err)
 			} else {
-				properties[destination] = arrayJSON
+				properties[destination] = string(arrayJSON)
 			}
 		} else if value != nil && value != bson.Undefined {
 			properties[destination] = value

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"reflect"
 )
 
 // Credentials to local MongoDB instance that will be used by the tests. Make sure your local
@@ -116,6 +117,43 @@ func (s *MongoTestSuite) TestGetDescription() {
 		cNamesSet.Remove(cName)
 	}
 	assert.Equal(t, 0, cNamesSet.Cardinality())
+}
+
+func (s *MongoTestSuite) TestGetPropertiesMapFromResult() {
+	result := map[string]interface{}{
+		"name": "Apple",
+		"color": "red",
+	}
+	collection := &Collection{
+		Fields: map[string]Field{
+			"name": Field{
+				Source: "name",
+			},
+		},
+	}
+
+	actual := getPropertiesMapFromResult(result, collection)
+	expected := map[string]interface{}{
+		"name": "Apple",
+	}
+
+	assert.True(s.T(), reflect.DeepEqual(expected, actual))
+}
+
+func (s *MongoTestSuite) TestGetPropertiesMapFromResultNone() {
+	result := map[string]interface{}{
+		"name": "Apple",
+		"color": "red",
+	}
+	collection := &Collection{
+		Fields: map[string]Field{
+			"nonexistentKey": Field{
+				Source: "nonexistentKey",
+			},
+		},
+	}
+
+	assert.Equal(s.T(), 0, len(getPropertiesMapFromResult(result, collection)))
 }
 
 func (s *MongoTestSuite) TestGetForNestedKey() {

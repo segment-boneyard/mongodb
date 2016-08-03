@@ -123,8 +123,8 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 			destinationName = field.DestinationName
 		}
 
-		if value != nil {
-			properties[destinationName] = getForNestedKey(result, field.Source)
+		if value != nil && value != bson.Undefined {
+			properties[destinationName] = value
 		}
 	}
 	return properties

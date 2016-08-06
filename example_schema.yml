@@ -5,14 +5,15 @@ test:
     destination_name: accounts
     fields:
       slug:
-      _id: id
+      _id: 
+        destination_name: id
   projects:
     # `fields` is a map from source field name in mongo to destination field name in .set
     fields:
       # Leave the destination field name (map value) empty to default to using
       # the source field name in mongo
-      name:
-      # You can always specify destination name explicitly for clarity
-      type: type
+      name: ~
+      type: ~
       # Specify a different destination name from a source name to rename field
-      _id: id
+      _id:
+        destination_name: id

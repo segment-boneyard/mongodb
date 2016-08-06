@@ -121,13 +121,14 @@ func getIdFromResult(result map[string]interface{}) (string, error) {
 
 func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) map[string]interface{} {
 	properties := make(map[string]interface{})
-	for source, destination := range c.Fields {
-		value := getForNestedKey(result, source)
+	for fieldName, field := range c.Fields {
+		value := getForNestedKey(result, fieldName)
 
-		// The destination name (e.g. name of the field in the warehouse) can be set by the user,
+		// The field name (e.g. name of the field in the warehouse) can be set by the user,
 		// otherwise it just defaults to the field name in Mongo.
-		if destination == "" {
-			destination = source
+		destinationName := fieldName
+		if field != nil && field.DestinationName != "" {
+			destinationName = field.DestinationName
 		}
 
 		if _, ok := value.([]interface{}); ok {
@@ -135,10 +136,10 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 			if err != nil {
 				logrus.Errorf("[Error] Unable to marshall value. Skipping `%v` err: %v", value, err)
 			} else {
-				properties[destination] = string(arrayJSON)
+				properties[destinationName] = string(arrayJSON)
 			}
 		} else if value != nil && value != bson.Undefined {
-			properties[destination] = value
+			properties[destinationName] = value
 		}
 	}
 	return properties

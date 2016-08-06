@@ -4,14 +4,18 @@
       "destination_name": "accounts",
       "fields": {
         "slug": null,
-        "_id": "id"
+        "_id": {
+          "destination_name": "id"
+        }
       }
     },
     "projects": {
       "fields": {
         "name": null,
-        "type": "type",
-        "_id": "id"
+        "type": null,
+        "_id": {
+          "destination_name": "id"
+        }
       }
     }
   }

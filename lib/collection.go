@@ -1,9 +1,14 @@
 package mongodb
 
+type Field struct {
+	FieldName       string `json:"-"`
+	DestinationName string `json:"destination_name"`
+}
+
 type Collection struct {
-	Fields          map[string]string `json:"fields"`
 	CollectionName  string            `json:"-"`
 	DestinationName string            `json:"destination_name,omitempty"`
+	Fields          map[string]*Field `json:"fields"`
 }
 
 func (c *Collection) GetFieldNames() []string {

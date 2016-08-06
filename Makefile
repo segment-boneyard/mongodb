@@ -6,13 +6,13 @@ save-deps:
 	godep save
 
 run:
-	go run main.go $(ARGS)
+	godep go run main.go $(ARGS)
 
 build:
-	go build .
+	godep go build .
 	
 test:
-	go test .
+	godep go test .
 
 build-image:
 	docker build $(FLAGS) -t $(IMAGE):$(VERSION) . 

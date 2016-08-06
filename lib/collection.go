@@ -1,4 +1,4 @@
-package main
+package mongodb
 
 type Collection struct {
 	Fields          map[string]string `json:"fields"`

@@ -1,8 +1,8 @@
-package main
+package mongodb
 
 import (
-	"io"
 	"encoding/json"
+	"io"
 )
 
 type Description struct {

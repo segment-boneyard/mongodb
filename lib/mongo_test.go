@@ -1,4 +1,4 @@
-package main
+package mongodb
 
 import (
 	"testing"

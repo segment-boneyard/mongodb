@@ -7,10 +7,11 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/asaskevich/govalidator"
+	"github.com/segment-sources/mongodb/lib"
+	"github.com/segmentio/ecs-logs-go/logrus"
 	"github.com/segmentio/objects-go"
 	"github.com/tj/docopt"
 	"github.com/tj/go-sync/semaphore"
-	"github.com/segmentio/ecs-logs-go/logrus"
 )
 
 const (
@@ -52,7 +53,7 @@ Options:
 `
 
 func main() {
-	app := &MongoDB{};
+	app := &mongodb.MongoDB{}
 	defer app.Close()
 
 	m, err := docopt.Parse(usage, nil, true, Version, false)
@@ -64,7 +65,7 @@ func main() {
 	if m["--debug"].(bool) {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
-	
+
 	if m["--json-log"].(bool) {
 		logrus.SetFormatter(logrus_ecslogs.NewFormatter())
 	}
@@ -76,13 +77,13 @@ func main() {
 	}
 
 	// Load and validate DB configuration.
-	config := &Config{
-		Init:         m["--init"].(bool),
-		Hostname:     m["--hostname"].(string),
-		Port:         m["--port"].(string),
-		Username:     m["--username"].(string),
-		Password:     m["--password"].(string),
-		Database:     m["--database"].(string),
+	config := &mongodb.Config{
+		Init:     m["--init"].(bool),
+		Hostname: m["--hostname"].(string),
+		Port:     m["--port"].(string),
+		Username: m["--username"].(string),
+		Password: m["--password"].(string),
+		Database: m["--database"].(string),
 	}
 	_, err = govalidator.ValidateStruct(config)
 	if err != nil {
@@ -113,7 +114,7 @@ func main() {
 	}
 	defer schemaFile.Close()
 
-	description, err := NewDescriptionFromReader(schemaFile)
+	description, err := mongodb.NewDescriptionFromReader(schemaFile)
 	if err == io.EOF {
 		logrus.Error("Empty schema, did you run `--init`?")
 		return
@@ -131,9 +132,9 @@ func main() {
 	run(writeKey, app, description, concurrency)
 }
 
-func initSchema(fileName string, app *MongoDB) {
+func initSchema(fileName string, app *mongodb.MongoDB) {
 	logrus.Info("Will output schema to ", fileName)
-	schemaFile, err := os.OpenFile(fileName, os.O_WRONLY | os.O_TRUNC | os.O_CREATE, 0644)
+	schemaFile, err := os.OpenFile(fileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0644)
 	if err != nil {
 		logrus.Error(err)
 		return
@@ -155,7 +156,7 @@ func initSchema(fileName string, app *MongoDB) {
 	logrus.Infof("Saved to `%s`", schemaFile.Name())
 }
 
-func run(writeKey string, app *MongoDB, description *Description, concurrency int) {
+func run(writeKey string, app *mongodb.MongoDB, description *mongodb.Description, concurrency int) {
 	logrus.Info("Mongo source started with writeKey ", writeKey)
 	segmentClient := objects.New(writeKey)
 	defer segmentClient.Close()
@@ -177,20 +178,20 @@ func run(writeKey string, app *MongoDB, description *Description, concurrency in
 		}
 
 		sem.Acquire()
-		go func(collection *Collection, dbName string) {
+		go func(collection *mongodb.Collection, dbName string) {
 			defer sem.Release()
 			logrus.WithFields(logrus.Fields{"db": dbName, "collection": collection.CollectionName}).Info("Scan started")
 			if err := app.ScanCollection(collection, setWrapperFunc); err != nil {
 				logrus.Error(err)
 			}
 			logrus.WithFields(logrus.Fields{"db": dbName, "collection": collection.CollectionName}).Info("Scan finished")
-		}(collection, app.dbName)
+		}(collection, app.DBName)
 	}
 
 	sem.Wait()
 
 	// Log status
 	for collection := range description.Iter() {
-		logrus.WithFields(logrus.Fields{"db": app.dbName, "collection": collection.CollectionName}).Info("Sync finished")
+		logrus.WithFields(logrus.Fields{"db": app.DBName, "collection": collection.CollectionName}).Info("Sync finished")
 	}
 }

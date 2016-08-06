@@ -1,4 +1,4 @@
-package main
+package mongodb
 
 import (
 	"encoding/json"
@@ -16,7 +16,7 @@ import (
 
 type MongoDB struct {
 	db     *mgo.Database
-	dbName string
+	DBName string
 }
 
 func (m *MongoDB) Init(c *Config) error {
@@ -32,7 +32,7 @@ func (m *MongoDB) Init(c *Config) error {
 	}
 
 	m.db = session.DB(c.Database)
-	m.dbName = c.Database
+	m.DBName = c.Database
 	logrus.Debugf("Connection to database '%s' established!", c.Database)
 	return nil
 }
@@ -47,7 +47,7 @@ func (m *MongoDB) GetDescription() (*Description, error) {
 
 	for _, name := range names {
 		// Add collections to result (it is intentionally empty right now so user can fill them out after init stage).
-		desc.AddCollection(name, m.dbName)
+		desc.AddCollection(name, m.DBName)
 	}
 
 	return desc, nil
@@ -78,7 +78,7 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 		// otherwise it just defaults to the collection name in Mongo.
 		var destinationName string
 		if c.DestinationName == "" {
-			destinationName = snakecase.Snakecase(fmt.Sprintf("%s_%s", m.dbName, c.CollectionName))
+			destinationName = snakecase.Snakecase(fmt.Sprintf("%s_%s", m.DBName, c.CollectionName))
 		} else {
 			destinationName = c.DestinationName
 		}

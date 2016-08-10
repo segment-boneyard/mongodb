@@ -131,6 +131,11 @@ func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) ma
 			destinationName = field.DestinationName
 		}
 
+		// Set api does not allow array values and will throw 400 if you try sending an array
+		// as a property value. As a workaround we will serialize the array to JSON, which when used with
+		// redshift, can be fairly easily operated on using JSON operators.
+		// We also omit nil and undefined value because Set API will validate against them as well.
+		// Missing value will naturally show up in Redshift as NULL which fits our intention pretty well.
 		if _, ok := value.([]interface{}); ok {
 			arrayJSON, err := json.Marshal(value)
 			if err != nil {

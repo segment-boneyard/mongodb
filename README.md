@@ -76,10 +76,16 @@ Let's say a user wants to export 4 fields: `name`, `cost`, `translations_spanish
         "products": {
             "destination_name": "my_products",
             "fields": {
-                "name": "my_name",
+                "name": {
+                  "destination_name": "my_name"
+                },
                 "cost": null,
-                "translations.spanish": "translations_spanish",
-                "translations.french": "translations_french"
+                "translations.spanish": {
+                  "destination_name": "translations_spanish"
+                },
+                "translations.french": {
+                  "destination_name": "translations_french"
+                }
             }
         }
     }

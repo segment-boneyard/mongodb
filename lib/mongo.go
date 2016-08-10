@@ -1,9 +1,11 @@
-package main
+package mongodb
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/segmentio/go-snakecase"
@@ -14,7 +16,7 @@ import (
 
 type MongoDB struct {
 	db     *mgo.Database
-	dbName string
+	DBName string
 }
 
 func (m *MongoDB) Init(c *Config) error {
@@ -23,13 +25,14 @@ func (m *MongoDB) Init(c *Config) error {
 		Database: c.Database,
 		Username: c.Username,
 		Password: c.Password,
+		Timeout:  time.Duration(5 * time.Second),
 	})
 	if err != nil {
 		return err
 	}
 
 	m.db = session.DB(c.Database)
-	m.dbName = c.Database
+	m.DBName = c.Database
 	logrus.Debugf("Connection to database '%s' established!", c.Database)
 	return nil
 }
@@ -44,7 +47,7 @@ func (m *MongoDB) GetDescription() (*Description, error) {
 
 	for _, name := range names {
 		// Add collections to result (it is intentionally empty right now so user can fill them out after init stage).
-		desc.AddCollection(name, m.dbName)
+		desc.AddCollection(name, m.DBName)
 	}
 
 	return desc, nil
@@ -52,8 +55,8 @@ func (m *MongoDB) GetDescription() (*Description, error) {
 
 func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object)) error {
 	fieldsToInclude := make(map[string]interface{})
-	for _, field := range c.Fields {
-		fieldsToInclude[field.Source] = 1
+	for source := range c.Fields {
+		fieldsToInclude[source] = 1
 	}
 	logrus.WithFields(logrus.Fields{"fieldsToInclude": fieldsToInclude}).Debug("Calculating which fields to include or exclude.")
 
@@ -61,7 +64,10 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 	iter := m.db.C(c.CollectionName).Find(nil).Select(fieldsToInclude).Iter()
 	var result map[string]interface{}
 	for iter.Next(&result) {
-		logrus.WithFields(logrus.Fields{"result": result}).Debug("Processing row from DB")
+		logrus.WithFields(logrus.Fields{
+			"result":     result,
+			"Collection": c.CollectionName,
+		}).Debug("Processing row from DB")
 
 		id, err := getIdFromResult(result)
 		if err != nil {
@@ -72,7 +78,7 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 		// otherwise it just defaults to the collection name in Mongo.
 		var destinationName string
 		if c.DestinationName == "" {
-			destinationName = snakecase.Snakecase(fmt.Sprintf("%s_%s", m.dbName, c.CollectionName))
+			destinationName = snakecase.Snakecase(fmt.Sprintf("%s_%s", m.DBName, c.CollectionName))
 		} else {
 			destinationName = c.DestinationName
 		}
@@ -92,7 +98,9 @@ func (m *MongoDB) ScanCollection(c *Collection, publish func(o *objects.Object))
 }
 
 func (m *MongoDB) Close() {
-	m.db.Session.Close()
+	if m.db != nil {
+		m.db.Session.Close()
+	}
 }
 
 func getIdFromResult(result map[string]interface{}) (string, error) {
@@ -114,16 +122,28 @@ func getIdFromResult(result map[string]interface{}) (string, error) {
 func getPropertiesMapFromResult(result map[string]interface{}, c *Collection) map[string]interface{} {
 	properties := make(map[string]interface{})
 	for fieldName, field := range c.Fields {
-		value := getForNestedKey(result, field.Source)
+		value := getForNestedKey(result, fieldName)
 
-		// The destination name (e.g. name of the collection in the warehouse) can be set by the user,
-		// otherwise it just defaults to the collection name in Mongo.
+		// The field name (e.g. name of the field in the warehouse) can be set by the user,
+		// otherwise it just defaults to the field name in Mongo.
 		destinationName := fieldName
-		if field.DestinationName != "" {
+		if field != nil && field.DestinationName != "" {
 			destinationName = field.DestinationName
 		}
 
-		if value != nil && value != bson.Undefined {
+		// Set api does not allow array values and will throw 400 if you try sending an array
+		// as a property value. As a workaround we will serialize the array to JSON, which when used with
+		// redshift, can be fairly easily operated on using JSON operators.
+		// We also omit nil and undefined value because Set API will validate against them as well.
+		// Missing value will naturally show up in Redshift as NULL which fits our intention pretty well.
+		if _, ok := value.([]interface{}); ok {
+			arrayJSON, err := json.Marshal(value)
+			if err != nil {
+				logrus.Errorf("[Error] Unable to marshall value. Skipping `%v` err: %v", value, err)
+			} else {
+				properties[destinationName] = string(arrayJSON)
+			}
+		} else if value != nil && value != bson.Undefined {
 			properties[destinationName] = value
 		}
 	}

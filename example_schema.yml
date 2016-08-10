@@ -1,0 +1,19 @@
+test:
+  users:
+    # If destination_name is not specified, we would use <database>_<collection>
+    # as the destination collection name. (e.g. test_users)
+    destination_name: accounts
+    fields:
+      slug:
+      _id: 
+        destination_name: id
+  projects:
+    # `fields` is a map from source field name in mongo to destination field name in .set
+    fields:
+      # Leave the destination field name (map value) empty to default to using
+      # the source field name in mongo
+      name: ~
+      type: ~
+      # Specify a different destination name from a source name to rename field
+      _id:
+        destination_name: id

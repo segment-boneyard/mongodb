@@ -1,0 +1,22 @@
+{
+  "test": {
+    "users": {
+      "destination_name": "accounts",
+      "fields": {
+        "slug": null,
+        "_id": {
+          "destination_name": "id"
+        }
+      }
+    },
+    "projects": {
+      "fields": {
+        "name": null,
+        "type": null,
+        "_id": {
+          "destination_name": "id"
+        }
+      }
+    }
+  }
+}

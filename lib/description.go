@@ -1,8 +1,8 @@
-package main
+package mongodb
 
 import (
-	"io"
 	"encoding/json"
+	"io"
 )
 
 type Description struct {
@@ -29,7 +29,7 @@ func (d *Description) AddCollection(collectionName string, dbName string) {
 		d.schemas[dbName] = map[string]*Collection{}
 	}
 	d.schemas[dbName][collectionName] = &Collection{}
-	d.schemas[dbName][collectionName].Fields = make(map[string]Field)
+	d.schemas[dbName][collectionName].Fields = make(map[string]*Field)
 }
 
 func (d *Description) Save(w io.Writer) error {

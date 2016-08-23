@@ -55,7 +55,7 @@ go get github.com/segment-sources/mongodb
 
 The first step is to initialize your schema. You can do so by running `mongodb` with `--init` flag.
 ```bash
-mongodb --hostname=mongo-test.ksd31bacms.us-west-2.rds.amazonaws.com --port=27017 --username=segment --password=cndgks9102baajls --database=segment --sslmode=prefer --init
+mongodb --hostname=mongo-test.ksd31bacms.us-west-2.rds.amazonaws.com --port=27017 --username=segment --password=cndgks9102baajls --database=segment --init
 ```
 The init step will store the schema of possible collections that the source can sync in `schema.json`. The user should then fill in which fields for each collection should be exported. If no fields for a collection are desired, feel free to remove that particular collection from the JSON entry altogether.
 

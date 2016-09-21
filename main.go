@@ -115,7 +115,7 @@ func main() {
 		}
 	}
 
-	logrus.Info("Mongo source started with writeKey ", writeKey)
+	logrus.Info("[%v] Mongo source started with writeKey ", Version, writeKey)
 	if err := mongodb.Run(config, description, concurrency, setWrapperFunc); err != nil {
 		logrus.Error("mongodb source failed to complete", err)
 		os.Exit(1)

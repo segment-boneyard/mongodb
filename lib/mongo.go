@@ -22,6 +22,7 @@ type MongoDB struct {
 func (m *MongoDB) Init(c *Config) error {
 	session, err := mgo.DialWithInfo(&mgo.DialInfo{
 		Addrs:    []string{c.Hostname + ":" + c.Port},
+		Direct:   c.Direct,
 		Database: c.Database,
 		Username: c.Username,
 		Password: c.Password,

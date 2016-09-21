@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"os"
 	"strconv"
 
 	"github.com/Sirupsen/logrus"
@@ -14,7 +15,7 @@ import (
 )
 
 const (
-	Version = "v0.1.4-beta"
+	Version = "v0.1.5-beta"
 	Usage   = `
 Usage:
   mongodb
@@ -114,6 +115,9 @@ func main() {
 		}
 	}
 
-	logrus.Info("Mongo source started with writeKey ", writeKey)
-	mongodb.Run(config, description, concurrency, setWrapperFunc)
+	logrus.Info("[%v] Mongo source started with writeKey ", Version, writeKey)
+	if err := mongodb.Run(config, description, concurrency, setWrapperFunc); err != nil {
+		logrus.Error("mongodb source failed to complete", err)
+		os.Exit(1)
+	}
 }

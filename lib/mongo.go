@@ -22,6 +22,7 @@ type MongoDB struct {
 func (m *MongoDB) Init(c *Config) error {
 	session, err := mgo.DialWithInfo(&mgo.DialInfo{
 		Addrs:    []string{c.Hostname + ":" + c.Port},
+		Direct:   c.Direct,
 		Database: c.Database,
 		Username: c.Username,
 		Password: c.Password,
@@ -30,7 +31,7 @@ func (m *MongoDB) Init(c *Config) error {
 	if err != nil {
 		return err
 	}
-
+	session.SetMode(mgo.Secondary, c.Secondary)
 	m.db = session.DB(c.Database)
 	m.DBName = c.Database
 	logrus.Debugf("Connection to database '%s' established!", c.Database)

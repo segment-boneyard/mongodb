@@ -12,4 +12,6 @@ type Config struct {
 	// Note that to talk to a secondary the consistency requirements
 	// must be relaxed to Monotonic or Eventual via SetMode.
 	Direct bool
+	// Secondary = only connect to secondary servers
+	Secondary bool
 }

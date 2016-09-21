@@ -31,7 +31,7 @@ func (m *MongoDB) Init(c *Config) error {
 	if err != nil {
 		return err
 	}
-
+	session.SetMode(mgo.Secondary, c.Secondary)
 	m.db = session.DB(c.Database)
 	m.DBName = c.Database
 	logrus.Debugf("Connection to database '%s' established!", c.Database)

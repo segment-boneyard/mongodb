@@ -56,7 +56,7 @@ func ParseSchema(fileName string) (*Description, error) {
 	return NewDescriptionFromReader(schemaFile)
 }
 
-func Run(config *Config, description *Description, concurrency int, setObjectFunc SetObjectFunc) {
+func Run(config *Config, description *Description, concurrency int, setObjectFunc SetObjectFunc) error {
 	app := &MongoDB{}
 	defer app.Close()
 
@@ -65,7 +65,7 @@ func Run(config *Config, description *Description, concurrency int, setObjectFun
 	// Initialize DB connection.
 	if err := app.Init(config); err != nil {
 		logrus.Error(err)
-		return
+		return err
 	}
 
 	// Launch goroutines to scan the documents in each collection.
@@ -94,4 +94,5 @@ func Run(config *Config, description *Description, concurrency int, setObjectFun
 	for collection := range description.Iter() {
 		logrus.WithFields(logrus.Fields{"db": app.DBName, "collection": collection.CollectionName}).Info("Sync finished")
 	}
+	return nil
 }

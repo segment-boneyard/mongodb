@@ -26,18 +26,18 @@ func InitSchema(config *Config, fileName string) {
 		config.Username, config.Hostname, config.Port, config.Database)
 	// Initialize DB connection.
 	if err := app.Init(config); err != nil {
-		logrus.Error(err)
+		logrus.WithError(err).Error("Failed to get initialize mongo")
 		return
 	}
 
 	description, err := app.GetDescription()
 	if err != nil {
-		logrus.Error(err)
+		logrus.WithError(err).Error("Failed to get mongo db description")
 		return
 	}
 
 	if err := description.Save(schemaFile); err != nil {
-		logrus.Error(err)
+		logrus.WithError(err).WithField("schema_file", schemaFile).Error("Failed to save schema file")
 		return
 	}
 

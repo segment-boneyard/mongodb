@@ -14,6 +14,11 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+var (
+	// ErrDatabaseNotFound designates an error when a mongo database is not found
+	ErrDatabaseNotFound = errors.New("This database name does not exist in this mongo instance")
+)
+
 type MongoDB struct {
 	db     *mgo.Database
 	DBName string
@@ -31,10 +36,38 @@ func (m *MongoDB) Init(c *Config) error {
 	if err != nil {
 		return err
 	}
-	session.SetMode(mgo.Secondary, c.Secondary)
+
+	if c.Secondary {
+		session.SetMode(mgo.Secondary, true)
+	}
+
+	logrus.Debugf("Pinging mongo server ..")
+	err = session.Ping();
+	if err != nil {
+		logrus.WithError(err).Error("Mongo server ping failed")
+		return err
+	}
+	logrus.Debugf("Mongo server ping successful")
+
+	logrus.Debug("Retrieving database names ..")
+	names, err := session.DatabaseNames();
+	if err != nil {
+		logrus.WithError(err).Error("Mongo server DatabaseNames operation failed")
+		return err
+	}
+	logrus.WithField("database_names", names).Debug("Database names found")
+
+	if !contains(names, c.Database) {
+		logrus.WithError(ErrDatabaseNotFound).WithFields(logrus.Fields{
+			"database_name": c.Database,
+			"existing_database_names": names,
+		}).Error("This specific database not found.")
+		return ErrDatabaseNotFound;
+	}
+
 	m.db = session.DB(c.Database)
 	m.DBName = c.Database
-	logrus.Debugf("Connection to database '%s' established!", c.Database)
+	logrus.Infof("Connection to database '%s' established!", c.Database)
 	return nil
 }
 
@@ -171,4 +204,14 @@ func getForNestedKey(curMap map[string]interface{}, key string) interface{} {
 		}
 	}
 	return nil
+}
+
+// checks if a string slice contains a string
+func contains(s []string, e string) bool {
+  for _, a := range s {
+      if a == e {
+          return true
+      }
+  }
+  return false
 }

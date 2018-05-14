@@ -3,7 +3,7 @@ package mongodb
 import (
 	"os"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/segmentio/objects-go"
 	"github.com/tj/go-sync/semaphore"
 )
